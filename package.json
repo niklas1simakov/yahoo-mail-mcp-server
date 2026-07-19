@@ -21,12 +21,12 @@
   "license": "MIT",
   "packageManager": "pnpm@11.11.0",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.26.0",
-    "dotenv": "^17.2.1",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "dotenv": "^17.4.2",
     "imap": "^0.8.19",
-    "mailparser": "^3.9.9"
+    "mailparser": "^3.9.14"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=24.0.0"
   }
 }

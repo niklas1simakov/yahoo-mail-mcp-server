@@ -24,7 +24,7 @@ All operations use permanent IMAP **UIDs** (not sequence numbers), so identifier
 
 ### 1. Install
 
-Requires Node.js ≥ 18 and [pnpm](https://pnpm.io).
+Requires Node.js ≥ 24 and [pnpm](https://pnpm.io).
 
 ```bash
 pnpm install

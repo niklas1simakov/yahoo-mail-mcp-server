@@ -12,16 +12,16 @@ importers:
   .:
     dependencies:
       '@modelcontextprotocol/sdk':
-        specifier: ^1.26.0
+        specifier: ^1.29.0
         version: 1.29.0(zod@4.4.3)
       dotenv:
-        specifier: ^17.2.1
+        specifier: ^17.4.2
         version: 17.4.2
       imap:
         specifier: ^0.8.19
         version: 0.8.19
       mailparser:
-        specifier: ^3.9.9
+        specifier: ^3.9.14
         version: 3.9.14
 
 packages:
