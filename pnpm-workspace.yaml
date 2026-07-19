@@ -1,0 +1,5 @@
+# pnpm settings (pnpm 10+ reads overrides from here, not package.json)
+overrides:
+  # The unmaintained `imap` lib pins a semver version with a ReDoS advisory
+  # (GHSA-c2qf-rxjj-qqgw); 5.7.2 is API-compatible.
+  "semver@<5.7.2": "^5.7.2"
