@@ -35,18 +35,22 @@ To enable them:
 2. Open Developer Tools, select the **Network** panel, and reload Yahoo Mail.
 3. Open **Settings → More Settings → Filters** so Yahoo sends a request to
    `/ws/v3/batch`. A request named `savedSearches.getMessageFilters` is ideal.
-4. Select that request and collect:
-   - **Cookie:** Under **Headers → Request Headers**, copy the complete value of
-     the `Cookie` header. It is a semicolon-separated list and must remain on
-     one line. Alternatively, use **Copy → Copy as cURL** and take only the
-     value after `cookie:`.
-   - **WSSID:** Copy the `wssid` query parameter from the request URL.
-   - **Mailbox ID:** Under **Payload**, inspect the `batchJson` value. Copy the
-     opaque text between `/mailboxes/@.id==` and the next `/` from a URI such
-     as `/mailboxes/@.id==<mailbox-id>/savedsearches`.
+4. Right-click that request and select
+   **Copy → Copy as fetch (Node.js)**. Paste the generated code into a private
+   scratch editor for inspection—do not execute, share, or commit it.
+5. Collect these values from the generated `fetch(...)` call:
+   - **Cookie:** Copy the complete value of the `"cookie"` entry in `headers`.
+     It is a semicolon-separated list and must remain on one line. The Node.js
+     variant is important because browser-oriented fetch copies may omit this
+     protected request header.
+   - **WSSID:** Copy the `wssid` query parameter from the URL passed to
+     `fetch(...)`.
+   - **Mailbox ID:** In the request `body`, find a URI such as
+     `/mailboxes/@.id==<mailbox-id>/savedsearches` and copy the opaque text
+     between `/mailboxes/@.id==` and the next `/`.
    - **App ID:** Copy the `appId` query parameter, or keep the current default
      `YMailNovation`.
-5. Put the values in `.env`, quoting the complete cookie value:
+6. Put the values in `.env`, quoting the complete cookie value:
 
 ```dotenv
 YAHOO_WEB_COOKIE='PH=...; Y=...; A1=...; A3=...'
