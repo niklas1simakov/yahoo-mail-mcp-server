@@ -32,9 +32,18 @@ Consequently, the IMAP app password is **not sufficient** for these two tools.
 To enable them:
 
 1. Sign in to [Yahoo Mail](https://mail.yahoo.com/) in a desktop browser.
-2. Open Developer Tools, select the **Network** panel, and reload Yahoo Mail.
-3. Open **Settings → More Settings → Filters** so Yahoo sends a request to
-   `/ws/v3/batch`. A request named `savedSearches.getMessageFilters` is ideal.
+2. Open Developer Tools, select the **Network** panel, enter `batch` in its
+   filter box, and reload Yahoo Mail.
+3. Select an authenticated request whose URL starts like:
+
+   ```text
+   https://mail.yahoo.com/ws/v3/batch?name=savedSearches...
+   ```
+
+   For example, `savedSearches.getBlockedDomains` provides the session
+   credentials. A request such as `savedSearches.getMessageFilters`, whose
+   body contains `/mailboxes/@.id==...`, is ideal because it also exposes the
+   mailbox ID.
 4. Right-click that request and select
    **Copy → Copy as fetch (Node.js)**. Paste the generated code into a private
    scratch editor for inspection—do not execute, share, or commit it.
