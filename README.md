@@ -17,8 +17,55 @@ Forked from [jtokib/yahoo-mail-mcp-server](https://github.com/jtokib/yahoo-mail-
 | `move_emails` | Move emails to any folder |
 | `mark_as_read` / `mark_as_unread` | Toggle read status |
 | `flag_emails` / `unflag_emails` | Toggle star/flag |
+| `list_filters` | List Yahoo Mail server-side filters (web session required) |
+| `create_filter` | Create a filter that moves matching incoming mail (web session required) |
 
 All operations use permanent IMAP **UIDs** (not sequence numbers), so identifiers stay valid when other emails are deleted. There is **no permanent-delete tool** — nothing ever expunges mail.
+
+### Filter authentication
+
+Yahoo does not expose mail-filter management through IMAP or a documented
+public API. `list_filters` and `create_filter` use the same undocumented
+`/ws/v3/batch` and `savedsearches` calls as the Yahoo Mail web interface.
+Consequently, the IMAP app password is **not sufficient** for these two tools.
+
+To enable them:
+
+1. Sign in to [Yahoo Mail](https://mail.yahoo.com/) in a desktop browser.
+2. Open Developer Tools, select the **Network** panel, and reload Yahoo Mail.
+3. Open **Settings → More Settings → Filters** so Yahoo sends a request to
+   `/ws/v3/batch`. A request named `savedSearches.getMessageFilters` is ideal.
+4. Select that request and collect:
+   - **Cookie:** Under **Headers → Request Headers**, copy the complete value of
+     the `Cookie` header. It is a semicolon-separated list and must remain on
+     one line. Alternatively, use **Copy → Copy as cURL** and take only the
+     value after `cookie:`.
+   - **WSSID:** Copy the `wssid` query parameter from the request URL.
+   - **Mailbox ID:** Under **Payload**, inspect the `batchJson` value. Copy the
+     opaque text between `/mailboxes/@.id==` and the next `/` from a URI such
+     as `/mailboxes/@.id==<mailbox-id>/savedsearches`.
+   - **App ID:** Copy the `appId` query parameter, or keep the current default
+     `YMailNovation`.
+5. Put the values in `.env`, quoting the complete cookie value:
+
+```dotenv
+YAHOO_WEB_COOKIE='PH=...; Y=...; A1=...; A3=...'
+YAHOO_WEB_WSSID=<wssid query parameter>
+YAHOO_WEB_MAILBOX_ID=<opaque mailbox ID without the @.id== prefix>
+YAHOO_WEB_APP_ID=YMailNovation
+```
+
+Do **not** use `document.cookie` from the Console: JavaScript cannot read
+Yahoo's HttpOnly authentication cookies, and the resulting incomplete value
+will usually fail with `HTTP 401 / EC-4008`. The Network panel's outgoing
+`Cookie` request header includes those cookies.
+
+Restart or reconnect the MCP server after changing `.env`, then call
+`list_filters` to verify the session. The web cookie grants broad mailbox
+access, so never commit, log, or share it. Yahoo can expire or invalidate the
+cookie and WSSID at any time; if authentication starts returning 401, capture
+fresh values from a signed-in request. Because this API is undocumented,
+Yahoo may also change the endpoint or payload without notice.
 
 ## Setup
 
@@ -83,7 +130,7 @@ pnpm start   # run the server (stdio)
 pnpm dev     # run with auto-restart on file changes
 ```
 
-Quick smoke test (should print an initialize result and 11 tools):
+Quick smoke test (should print an initialize result and 13 tools):
 
 ```bash
 (echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'; \
@@ -97,17 +144,20 @@ src/
 ├── index.js            # Entry point: MCP server + stdio transport + tool routing
 ├── tools.js            # MCP tool definitions (schemas)
 ├── imap.js             # IMAP connection + shared helpers
+├── yahoo-web.js        # Undocumented Yahoo web API client for filters
 └── operations/
     ├── list.js         # list_emails
     ├── read.js         # read_email
     ├── search.js       # search_emails
     ├── modify.js       # delete/archive/move/flag/read-status operations
-    └── folders.js      # list_folders
+    ├── folders.js      # list_folders
+    └── filters.js      # list_filters/create_filter
 ```
 
 ## Security notes
 
-- Credentials only ever go to `imap.mail.yahoo.com` over TLS 1.2+ with certificate validation.
+- IMAP credentials only ever go to `imap.mail.yahoo.com` over TLS 1.2+ with certificate validation.
+- Filter-session cookies are sent only to the fixed HTTPS host `mail.yahoo.com`; endpoint overrides to other hosts are rejected.
 - The server is stdio-only: it opens **no network ports** and has no remote attack surface.
 - The delete tool is a soft delete (move to Trash), but Yahoo auto-purges Trash on its own schedule — treat agent-initiated deletes as eventually permanent.
 - Emails are untrusted input. If you let an AI agent read your inbox while it also has write tools (`delete_emails`, `move_emails`, …), a malicious email can attempt prompt injection to make the agent misfile or trash messages. Prefer keeping tool-approval prompts on for destructive actions.

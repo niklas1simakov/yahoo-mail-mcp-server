@@ -15,6 +15,7 @@ import { listEmails } from './operations/list.js';
 import { readEmails } from './operations/read.js';
 import { searchEmails } from './operations/search.js';
 import { listFolders } from './operations/folders.js';
+import { listFilters, createFilter } from './operations/filters.js';
 import {
     markAsRead,
     markAsUnread,
@@ -90,6 +91,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
             case 'list_folders':
                 return await listFolders();
+
+            case 'list_filters':
+                return await listFilters();
+
+            case 'create_filter':
+                return await createFilter({
+                    name: args.name,
+                    folderName: args.folderName,
+                    criteria: args.criteria
+                });
 
             default:
                 throw new Error(`Unknown tool: ${name}`);

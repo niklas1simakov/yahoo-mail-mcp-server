@@ -188,5 +188,58 @@ export const toolDefinitions = [
             type: 'object',
             properties: {}
         }
+    },
+    {
+        name: 'list_filters',
+        description: 'List Yahoo Mail server-side filters. Requires a Yahoo web session (YAHOO_WEB_COOKIE, YAHOO_WEB_WSSID, and YAHOO_WEB_MAILBOX_ID); an IMAP app password alone is not sufficient.',
+        inputSchema: {
+            type: 'object',
+            properties: {}
+        }
+    },
+    {
+        name: 'create_filter',
+        description: 'Create a Yahoo Mail server-side filter that moves matching incoming mail to an existing folder. Requires a Yahoo web session. New filters are added at the lowest priority.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                name: {
+                    type: 'string',
+                    description: 'Unique, human-readable filter name'
+                },
+                folderName: {
+                    type: 'string',
+                    description: 'Existing destination folder name, matched case-insensitively'
+                },
+                criteria: {
+                    type: 'array',
+                    minItems: 1,
+                    description: 'Conditions combined with AND. Yahoo applies every condition in a filter.',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            field: {
+                                type: 'string',
+                                enum: ['FROM', 'TOORCC', 'SUBJECT', 'BODY'],
+                                description: 'Message field to match'
+                            },
+                            operator: {
+                                type: 'string',
+                                enum: ['CONTAINS', 'NOTCONTAINS', 'BEGINSWITH', 'ENDSWITH'],
+                                description: 'Yahoo filter comparison operator'
+                            },
+                            value: {
+                                type: 'string',
+                                description: 'Non-empty text to match'
+                            }
+                        },
+                        required: ['field', 'operator', 'value'],
+                        additionalProperties: false
+                    }
+                }
+            },
+            required: ['name', 'folderName', 'criteria'],
+            additionalProperties: false
+        }
     }
 ];
